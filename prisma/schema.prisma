@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider       = "postgresql"
+  url            = env("DATABASE_URL")
+}
+
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PaymentTerms {
+  NET_7   @map("7")
+  NET_15  @map("15")
+  NET_30  @map("30")
+  NET_45  @map("45")
+  NET_60  @map("60")
+}
+
+enum POStatus {
+  DRAFT
+  APPROVED
+  PARTIALLY_PAID
+  FULLY_PAID
+}
+
+enum PaymentMethod {
+  CASH
+  CHEQUE
+  NEFT
+  RTGS
+  UPI
+}
+
+model Vendor {
+  id             String       @id @default(uuid())
+  name           String       @unique
+  contactPerson  String?
+  email          String       @unique
+  phone          String?
+  paymentTerms   Int          // Storing as integer days for easier calculation (7, 15, 30, etc.)
+  status         VendorStatus @default(ACTIVE)
+  
+  purchaseOrders PurchaseOrder[]
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("vendors")
+}
+
+model PurchaseOrder {
+  id             String        @id @default(uuid())
+  poNumber       String        @unique // PO-YYYYMMDD-XXX
+  vendorId       String
+  vendor         Vendor        @relation(fields: [vendorId], references: [id])
+  date           DateTime
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  paymentDueDate DateTime
+  status         POStatus      @default(DRAFT)
+  items          Json          // Array of { description, quantity, unitPrice }
+  
+  payments       Payment[]
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("purchase_orders")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  paymentRef      String        @unique // PAY-YYYYMMDD-XXX
+  poId            String
+  purchaseOrder   PurchaseOrder @relation(fields: [poId], references: [id])
+  date            DateTime
+  amount          Decimal       @db.Decimal(10, 2)
+  method          PaymentMethod
+  notes           String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payments")
+}
