@@ -4,8 +4,8 @@ A backend API system for managing vendor payments, purchase orders, and payment 
 
 ## 🚀 Live Demo
 
-- **API Base URL**: `https://your-deployed-url.com`
-- **Swagger Docs**: `https://your-deployed-url.com/api`
+- **API Base URL**: `[https://qistonpe-assign.onrender.com/`
+- **Swagger Docs**: `https://qistonpe-assign.onrender.com/api`
 - **Docker Image**: `ramanand8/qistonpe-api:latest`
 
 ## 🔐 Authentication Credentials
